@@ -48,8 +48,10 @@ with a good way to show context or the full story.
 The other "forum game" that I thought would be fun to add to the bot is a simple counting game. Bot admin can
 set a max number that he doesn't have to tell to anyone, and the other users count up to that number.
 
-**League of Legends API**
-LoL API has now been added. The code is messy and broken, but the concept is there and there are actually a couple of features that work just fine. Still in development.
 
 **Twitter API**
 Not exactly sure what I want to do with this yet, but I thought it'd be neat to incorperate twitter somehow.
+
+Legal
+--------
+Brownbot isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered trademarks of Riot Games, Inc. League of Legends © Riot Games, Inc.
