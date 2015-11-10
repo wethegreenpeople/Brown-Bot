@@ -1,3 +1,5 @@
+python bot.py
+
 import discord
 import random
 import json
