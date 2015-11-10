@@ -27,7 +27,7 @@ Gives you a full list of the working commands.
 
 League of Legends Commands
 ------------
-**!lol**
+**!stats**
 Gives you stats about a summoner. Currently it displays stats from their unranked, ranked solo, and ranked team games. It's really broken because if a summoner doesn't have stats for one of those gamemodes, then the whole thing breaks and won't display/displays the wrong information.
 
 **!matchhistory**
@@ -35,6 +35,9 @@ Gives you stats about the last one or two games the summoner has played. It's 90
 
 **!id**
 Simple. Gives the ID of a summoner. It'd be better if people used their ID when using !lol and !matchhistory because it uses one less API call, but it's not a big deal and I don't expect anyone to memorise their ID. Mainly used for development purposes. Works 100%
+
+**!freechamps**
+Displays the current rotation of free champions
 
 
 Planned Features / Work in progress
