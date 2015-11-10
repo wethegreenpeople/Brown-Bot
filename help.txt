@@ -1,0 +1,18 @@
+Here are a list of my current commands:
+
+**!hello**
+**!flood**
+**!joke**
+**!swanson**
+---------------
+**!stats < summoner name>**
+Displays Stats for unranked, team ranked, and solo ranked. Hella broken right now. Only works on summoners that have played all three of those
+
+**!id <summoner name>**
+Pulls the ID of a summoner. Works 100%
+
+**!matchhistory <summoner name>**
+Displays information about your last 1 or 2 games. Fixed the bugs in this. Works 100%
+
+**!freechamps**
+Displays the current rotation of free champs. I fixed the bugs in this. Works 100%
