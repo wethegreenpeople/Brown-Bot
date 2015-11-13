@@ -1,7 +1,7 @@
 import discord
-import random
 import json
 import requests
+from tabulate import tabulate
 
 client = discord.Client()
 client.login('<BOT EMAIL>', "<BOT PASSWORD>")
@@ -19,8 +19,9 @@ def on_ready():
 
 @client.event
 def on_message(message):
-    if message.content.startswith('!hello'):
-        client.send_message(message.channel, 'Hello {}! How are you?'.format(message.author.name))
+    if message.content.startswith('!join'):
+        invite = message.content.replace("!join ", "")
+        client.accept_invite(invite)
 
     admins = ["87250476927549441", "87250476927549440"]
     if message.content.startswith("?flood"):
@@ -63,105 +64,313 @@ def on_message(message):
         client.send_message(message.author, fileContent)
         helpFile.close()
 
+def join(message):
+
+    client.accept_invite(line)
+
 def statsTest(message):
    #removes alerting code, spaces, and makes summoner name lower case
     summoner = message.content.replace("!teststats ", "")
-    summoner = summoner.replace(" ", "")
     summoner = summoner.lower()
+    listCheck = summoner.split()
+    summoner = str(listCheck[0])
 
-    #checks to see if the value inputted is a number or not. So you don't have to run two api calls needlessly
-    try:
-        int(summoner)
-    except ValueError:
-        #finding the ID from the username
-        leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/"+summoner+"?<API KEY>")
-        if leaguePull.status_code == 200:
-            summoner = str(leaguePull.json()[summoner]["id"])
+    #Defaulting to NA. If only a summoner name and no region is input.
+    if len(listCheck) == 1:
+        #checks to see if the value inputted is a number or not. So you don't have to run two api calls needlessly
+        try:
+            int(summoner)
+        except ValueError:
+            #finding the ID from the username
+            leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/"+summoner+"?<API KEY>")
+            if leaguePull.status_code == 200:
+                summoner = str(leaguePull.json()[summoner]["id"])
+            else:
+                client.send_message(message.channel, leaguePull.status_code)
+        #pulling the stats
+        leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.3/stats/by-summoner/"+summoner+"/summary?season=SEASON2015&<API KEY>")
+        aNumber = 0
+        unranked = []
+        rankedSolo = []
+        rankedTeam = []
+        rankedTeamTest = 0
+        statsLength = len(leaguePull.json()["playerStatSummaries"])
+        #Cycling through the dict, then pull the stats
+        while str(leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"]) != "Unranked":
+            aNumber += 1
+
+        unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["wins"]))
+        unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalMinionKills"]))
+        unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalChampionKills"]))
+        
+        rankedCheck = requests.get("https://na.api.pvp.net/api/lol/na/v1.3/stats/by-summoner/"+summoner+"/ranked?season=SEASON2015&<API KEY>")
+        if rankedCheck.status_code == 200:
+            aNumber = 0
+            while str(leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"]) != "RankedSolo5x5":
+                aNumber += 1
+
+            rankedSolo.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["wins"]))
+            rankedSolo.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalMinionKills"]))
+            rankedSolo.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalChampionKills"]))
+
+            aNumber = 0
+            while aNumber != statsLength:
+                ##client.send_message(message.channel, aNumber)
+                ##client.send_message(message.channel, leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"])
+                aNumber += 1
+                if aNumber != statsLength and str(leaguePull.json()["playerStatSummaries"][aNumber - 1]["playerStatSummaryType"]) == "RankedTeam5x5":
+                    rankedTeam.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["wins"]))
+                    rankedTeam.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalMinionKills"]))
+                    rankedTeam.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalChampionKills"]))
+
+                    table = [["Rank", "Minion Kills", "Champion Kills", "Wins"],["Unranked", unranked[1], unranked[2], unranked[0]], ["Solo Ranked", rankedSolo[1], rankedSolo[2], rankedSolo[0]], ["Team Ranked", rankedTeam[1], rankedTeam[2], rankedTeam[0]]]
+                    client.send_message(message.channel, "```" +
+                    str(tabulate(table, headers="firstrow", tablefmt="rst") +
+                    "```")
+                        )
+                    aNumber = statsLength
+
+                elif aNumber == statsLength and str(leaguePull.json()["playerStatSummaries"][aNumber - 1]["playerStatSummaryType"]) != "RankedTeam5x5":
+                    table = [["Rank", "Minion Kills", "Champion Kills", "Wins"],["Unranked", unranked[1], unranked[2], unranked[0]], ["Solo Ranked", rankedSolo[1], rankedSolo[2], rankedSolo[0]], ["Team Ranked", "No", "Team", "Ranked"]]
+                    client.send_message(message.channel, "```" +
+                    str(tabulate(table, headers="firstrow", tablefmt="rst") +
+                    "```")
+                        )
+                    aNumber = statsLength
         else:
-            client.send_message(message.channel, leaguePull.status_code)
-
-    #pulling the stats
-    leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.3/stats/by-summoner/"+summoner+"/summary?season=SEASON2015&<API KEY>")
-    aNumber = 0
-    anotherNumber = 0
-    unrankedWins = []
-    unrankedMinions = []
-    unrankedChampions = []
-    client.send_message(message.channel, str(leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"]))
-    while str(leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"]) != "Unranked":
-        aNumber += 1
-        anotherNumber += 1
-
-    unrankedWins.append(str(leaguePull.json()["playerStatSummaries"][anotherNumber]["wins"]))
-    unrankedMinions.append(str(leaguePull.json()["playerStatSummaries"][anotherNumber]["aggregatedStats"]["totalMinionKills"]))
-    unrankedChampions.append(str(leaguePull.json()["playerStatSummaries"][anotherNumber]["aggregatedStats"]["totalChampionKills"]))
-
-    if leaguePull.status_code == 200:
-        client.send_message(message.channel,
-            "**Unranked**\n\n" + 
-            "```" +
-            "Minion Kills: " + str(unrankedMinions) + 
-            "\nChampion Kills: " + str(unrankedChampions) +
-            "\nWins: " + str(unrankedWins) +
+            table = [["Rank", "Minion Kills", "Champion Kills", "Wins"],["Unranked", unranked[1], unranked[2], unranked[0]], ["Solo Ranked", "No", "Ranked", "Stats"], ["Team Ranked", "No", "Ranked", "Stats"]]
+            client.send_message(message.channel, "```" +
+            str(tabulate(table, headers="firstrow", tablefmt="rst") +
             "```")
+                )
+
     else:
-        client.send_message(message.channel, leaguePull.status_code)
+        summonerRegion = str(listCheck[1])
+        #checks to see if the value inputted is a number or not. So you don't have to run two api calls needlessly
+        try:
+            int(summoner)
+        except ValueError:
+            #finding the ID from the username
+            leaguePull = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.4/summoner/by-name/"+summoner+"?<API KEY>")
+            if leaguePull.status_code == 200:
+                summoner = str(leaguePull.json()[summoner]["id"])
+            else:
+                client.send_message(message.channel, leaguePull.status_code)
+        #pulling the stats
+        leaguePull = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.3/stats/by-summoner/"+summoner+"/summary?season=SEASON2015&<API KEY>")
+        aNumber = 0
+        unranked = []
+        rankedSolo = []
+        rankedTeam = []
+        rankedTeamTest = 0
+        statsLength = len(leaguePull.json()["playerStatSummaries"])
+        #Cycling through the dict, then pull the stats
+        while str(leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"]) != "Unranked":
+            aNumber += 1
+
+        unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["wins"]))
+        unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalMinionKills"]))
+        unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalChampionKills"]))
+        unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalNeutralMinionsKilled"]))
+        unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalAssists"]))
+
+        rankedCheck = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.3/stats/by-summoner/"+summoner+"/ranked?season=SEASON2015&<API KEY>")
+        if rankedCheck.status_code == 200:
+            aNumber = 0
+            while str(leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"]) != "RankedSolo5x5":
+                aNumber += 1
+
+            rankedSolo.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["wins"]))
+            rankedSolo.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalMinionKills"]))
+            rankedSolo.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalChampionKills"]))
+            rankedSolo.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalNeutralMinionsKilled"]))
+            rankedSolo.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalAssists"]))
+            rankedSolo.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["losses"]))
+
+            aNumber = 0
+            while aNumber != statsLength:
+                ##client.send_message(message.channel, aNumber)
+                ##client.send_message(message.channel, leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"])
+                aNumber += 1
+                if aNumber != statsLength and str(leaguePull.json()["playerStatSummaries"][aNumber - 1]["playerStatSummaryType"]) == "RankedTeam5x5":
+                    rankedTeam.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["wins"]))
+                    rankedTeam.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalMinionKills"]))
+                    rankedTeam.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalChampionKills"]))
+                    rankedTeam.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalNeutralMinionsKilled"]))
+                    rankedTeam.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalAssists"]))
+                    rankedTeam.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["losses"]))
+
+                    "Queue", "Jungle Kills", "Assists", "Losses"
+                    table = [["Queue", "Champ Kills", "Wins", "Losses"],["Unranked", unranked[1], unranked[2], unranked[0]], ["Solo Ranked", rankedSolo[1], rankedSolo[2], rankedSolo[0]], ["Team Ranked", rankedTeam[1], rankedTeam[2], rankedTeam[0]]]
+                    table2 = [["Queue", "Minion Kills", "JNG Kills", "Assists"],["Unranked", unranked[3], unranked[4], "N/A"], ["Solo Ranked", rankedSolo[3], rankedSolo[4], rankedSolo[5]], ["Team Ranked", rankedTeam[3], rankedTeam[4], rankedTeam[5]]]
+                    client.send_message(message.channel, "```" + "\n" +
+                    str(tabulate(table, headers="firstrow", tablefmt="rst") + "\n\n" +
+                    str(tabulate(table2, headers="firstrow", tablefmt="rst") +
+                    "```")
+                        ))
+
+                    aNumber = statsLength
+
+                elif aNumber == statsLength and str(leaguePull.json()["playerStatSummaries"][aNumber - 1]["playerStatSummaryType"]) != "RankedTeam5x5":
+                    table = [["Rank", "Minion Kills", "Champion Kills", "Wins"],["Unranked", unranked[1], unranked[2], unranked[0]], ["Solo Ranked", rankedSolo[1], rankedSolo[2], rankedSolo[0]], ["Team Ranked", "No", "Team", "Ranked"]]
+                    client.send_message(message.channel, "```" +
+                    str(tabulate(table, headers="firstrow", tablefmt="rst") +
+                    "```")
+                        )
+                    aNumber = statsLength
+        else:
+            table = [["Queue", "Champ Kills", "Wins", "Losses"],["Unranked", unranked[1], unranked[2], unranked[0]], ["Solo Ranked", "N/A", "N/A", "N/A"], ["Team Ranked", "N/A", "N/A", "N/A"]]
+            table2 = [["Queue", "Minion Kills", "JNG Kills", "Assists"],["Unranked", unranked[3], unranked[4], "N/A"], ["Solo Ranked", "N/A", "N/A", "N/A"], ["Team Ranked", "N/A", "N/A", "N/A"]]
+            client.send_message(message.channel, "```" + "\n" +
+            str(tabulate(table, headers="firstrow", tablefmt="rst") + "\n\n" +
+            str(tabulate(table2, headers="firstrow", tablefmt="rst") +
+            "```")
+                ))
 
 def lolStats(message):
-    #Removes !lol from the setence
-    item = [message.content]
-    words = ["!stats "]
-    item1 = []
-    for line in item:
-        for w in words:
-            line = line.replace(w, "")
-        item1.append(line)
-    #checks to see if the value inputted is a number or not. So you don't have to run two api calls needlessly
-    try:
-        int(line)
-    except ValueError:
-        #finding the ID from the username
-        leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/"+line+"?<API KEY>")
-        if leaguePull.status_code == 200:
-            line = str(leaguePull.json()[line]["id"])
+   #removes alerting code, spaces, and makes summoner name lower case
+    summoner = message.content.replace("!stats ", "")
+    summoner = summoner.lower()
+    listCheck = summoner.split()
+    summoner = str(listCheck[0])
+
+    #Defaulting to NA. If only a summoner name and no region is input.
+    if len(listCheck) == 1:
+        #checks to see if the value inputted is a number or not. So you don't have to run two api calls needlessly
+        try:
+            int(summoner)
+        except ValueError:
+            #finding the ID from the username
+            leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/"+summoner+"?<API KEY>")
+            if leaguePull.status_code == 200:
+                summoner = str(leaguePull.json()[summoner]["id"])
+            else:
+                client.send_message(message.channel, leaguePull.status_code)
+        #pulling the stats
+        leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.3/stats/by-summoner/"+summoner+"/summary?season=SEASON2015&<API KEY>")
+        aNumber = 0
+        unranked = []
+        rankedSolo = []
+        rankedTeam = []
+        rankedTeamTest = 0
+        statsLength = len(leaguePull.json()["playerStatSummaries"])
+        #Cycling through the dict, then pull the stats
+        while str(leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"]) != "Unranked":
+            aNumber += 1
+
+        unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["wins"]))
+        unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalMinionKills"]))
+        unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalChampionKills"]))
+        
+        rankedCheck = requests.get("https://na.api.pvp.net/api/lol/na/v1.3/stats/by-summoner/"+summoner+"/ranked?season=SEASON2015&<API KEY>")
+        if rankedCheck.status_code == 200:
+            aNumber = 0
+            while str(leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"]) != "RankedSolo5x5":
+                aNumber += 1
+
+            rankedSolo.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["wins"]))
+            rankedSolo.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalMinionKills"]))
+            rankedSolo.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalChampionKills"]))
+
+            aNumber = 0
+            while aNumber != statsLength:
+                ##client.send_message(message.channel, aNumber)
+                ##client.send_message(message.channel, leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"])
+                aNumber += 1
+                if aNumber != statsLength and str(leaguePull.json()["playerStatSummaries"][aNumber - 1]["playerStatSummaryType"]) == "RankedTeam5x5":
+                    rankedTeam.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["wins"]))
+                    rankedTeam.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalMinionKills"]))
+                    rankedTeam.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalChampionKills"]))
+
+                    table = [["Queue", "Minion Kills", "Champion Kills", "Wins"],["Unranked", unranked[1], unranked[2], unranked[0]], ["Solo Ranked", rankedSolo[1], rankedSolo[2], rankedSolo[0]], ["Team Ranked", rankedTeam[1], rankedTeam[2], rankedTeam[0]]]
+                    client.send_message(message.channel, "```" +
+                    str(tabulate(table, headers="firstrow", tablefmt="rst") +
+                    "```")
+                        )
+                    aNumber = statsLength
+
+                elif aNumber == statsLength and str(leaguePull.json()["playerStatSummaries"][aNumber - 1]["playerStatSummaryType"]) != "RankedTeam5x5":
+                    table = [["Queue", "Minion Kills", "Champion Kills", "Wins"],["Unranked", unranked[1], unranked[2], unranked[0]], ["Solo Ranked", rankedSolo[1], rankedSolo[2], rankedSolo[0]], ["Team Ranked", "N/A", "N/A", "N/A"]]
+                    client.send_message(message.channel, "```" +
+                    str(tabulate(table, headers="firstrow", tablefmt="rst") +
+                    "```")
+                        )
+                    aNumber = statsLength
         else:
-            client.send_message(message.channel, leaguePull.status_code)
-
-    #pulling the stats
-    leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.3/stats/by-summoner/"+line+"/summary?season=SEASON2015&<API KEY>")
-    if leaguePull.status_code == 200:
-        client.send_message(message.channel,
-            "**Unranked**\n\n" + 
-            "```" +
-            "Minion Kills: " + str(leaguePull.json()["playerStatSummaries"][13]["aggregatedStats"]["totalMinionKills"]) + 
-            "\nChampion Kills: " + str(leaguePull.json()["playerStatSummaries"][13]["aggregatedStats"]["totalChampionKills"]) +
-            "\nWins: " + str(leaguePull.json()["playerStatSummaries"][13]["wins"]) +
+            table = [["Queue", "Minion Kills", "Champion Kills", "Wins"],["Unranked", unranked[1], unranked[2], unranked[0]], ["Solo Ranked", "N/A", "N/A", "N/A"], ["Team Ranked", "N/A", "N/A", "N/A"]]
+            client.send_message(message.channel, "```" +
+            str(tabulate(table, headers="firstrow", tablefmt="rst") +
             "```")
-        try: 
-            str(leaguePull.json()["playerStatSummaries"][14]["aggregatedStats"]["totalMinionKills"])
-            client.send_message(message.channel,
-                "**Ranked Solo 5v5**" + 
-                "\n\n"
-                "```" +
-                "Minion Kills: " + str(leaguePull.json()["playerStatSummaries"][14]["aggregatedStats"]["totalMinionKills"]) + 
-                "\nChampion Kills: " + str(leaguePull.json()["playerStatSummaries"][14]["aggregatedStats"]["totalChampionKills"]) +
-                "\nWins: " + str(leaguePull.json()["playerStatSummaries"][14]["wins"]) +
-                "\nLosses: " + str(leaguePull.json()["playerStatSummaries"][14]["losses"]) +
-                "```")
-        except:
-            client.send_message(message.channel, "This summoner doesn't have Ranked Solo 5v5 stats")
+                )
 
-        client.send_message(message.channel,
-             "**Ranked Team 5v5**" + 
-            "\n\n"
-            "```" +
-            "Minion Kills: " + str(leaguePull.json()["playerStatSummaries"][5]["aggregatedStats"]["totalMinionKills"]) + 
-            "\nChampion Kills: " + str(leaguePull.json()["playerStatSummaries"][5]["aggregatedStats"]["totalChampionKills"]) +
-            "\nWins: " + str(leaguePull.json()["playerStatSummaries"][5]["wins"]) +
-            "\nLosses: " + str(leaguePull.json()["playerStatSummaries"][5]["losses"]) +
-            "```") 
     else:
-        client.send_message(message.channel, leaguePull.status_code)
+        summonerRegion = str(listCheck[1])
+        #checks to see if the value inputted is a number or not. So you don't have to run two api calls needlessly
+        try:
+            int(summoner)
+        except ValueError:
+            #finding the ID from the username
+            leaguePull = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.4/summoner/by-name/"+summoner+"?<API KEY>")
+            if leaguePull.status_code == 200:
+                summoner = str(leaguePull.json()[summoner]["id"])
+            else:
+                client.send_message(message.channel, leaguePull.status_code)
+        #pulling the stats
+        leaguePull = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.3/stats/by-summoner/"+summoner+"/summary?season=SEASON2015&<API KEY>")
+        aNumber = 0
+        unranked = []
+        rankedSolo = []
+        rankedTeam = []
+        rankedTeamTest = 0
+        statsLength = len(leaguePull.json()["playerStatSummaries"])
+        #Cycling through the dict, then pull the stats
+        while str(leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"]) != "Unranked":
+            aNumber += 1
+
+        unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["wins"]))
+        unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalMinionKills"]))
+        unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalChampionKills"]))
+        
+        rankedCheck = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.3/stats/by-summoner/"+summoner+"/ranked?season=SEASON2015&<API KEY>")
+        if rankedCheck.status_code == 200:
+            aNumber = 0
+            while str(leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"]) != "RankedSolo5x5":
+                aNumber += 1
+
+            rankedSolo.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["wins"]))
+            rankedSolo.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalMinionKills"]))
+            rankedSolo.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalChampionKills"]))
+
+            aNumber = 0
+            while aNumber != statsLength:
+                ##client.send_message(message.channel, aNumber)
+                ##client.send_message(message.channel, leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"])
+                aNumber += 1
+                if aNumber != statsLength and str(leaguePull.json()["playerStatSummaries"][aNumber - 1]["playerStatSummaryType"]) == "RankedTeam5x5":
+                    rankedTeam.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["wins"]))
+                    rankedTeam.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalMinionKills"]))
+                    rankedTeam.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalChampionKills"]))
+
+                    table = [["Queue", "Minion Kills", "Champion Kills", "Wins"],["Unranked", unranked[1], unranked[2], unranked[0]], ["Solo Ranked", rankedSolo[1], rankedSolo[2], rankedSolo[0]], ["Team Ranked", rankedTeam[1], rankedTeam[2], rankedTeam[0]]]
+                    client.send_message(message.channel, "```" +
+                    str(tabulate(table, headers="firstrow", tablefmt="rst") +
+                    "```")
+                        )
+                    aNumber = statsLength
+
+                elif aNumber == statsLength and str(leaguePull.json()["playerStatSummaries"][aNumber - 1]["playerStatSummaryType"]) != "RankedTeam5x5":
+                    table = [["Queue", "Minion Kills", "Champion Kills", "Wins"],["Unranked", unranked[1], unranked[2], unranked[0]], ["Solo Ranked", rankedSolo[1], rankedSolo[2], rankedSolo[0]], ["Team Ranked", "N/A", "N/A", "N/A"]]
+                    client.send_message(message.channel, "```" +
+                    str(tabulate(table, headers="firstrow", tablefmt="rst") +
+                    "```")
+                        )
+                    aNumber = statsLength
+        else:
+            table = [["Queue", "Minion Kills", "Champion Kills", "Wins"],["Unranked", unranked[1], unranked[2], unranked[0]], ["Solo Ranked", "N/A", "N/A", "N/A"], ["Team Ranked", "N/A", "N/A", "N/A"]]
+            client.send_message(message.channel, "```" +
+            str(tabulate(table, headers="firstrow", tablefmt="rst") +
+            "```")
+                )
 
 def lolId(message):
     #removes alerting code, spaces, and makes summoner name lower case
