@@ -2,9 +2,11 @@ import discord
 import json
 import requests
 from tabulate import tabulate
+import datetime as dt
+import private
 
 client = discord.Client()
-client.login('<BOT EMAIL>', "<BOT PASSWORD>")
+client.login(private.botEmail, private.botPassword)
 
 if not client.is_logged_in:
     print("Logging into discord failed")
@@ -19,9 +21,21 @@ def on_ready():
 
 @client.event
 def on_message(message):
+    if message.content.startswith('!christmas'):
+        a = dt.datetime(2013,12,30,23,59,59)
+        b = dt.datetime(2013,12,31,23,59,59)
+        d = b-a
+        client.send_message(message.channel, d.hour())
+
     if message.content.startswith('!join'):
         invite = message.content.replace("!join ", "")
         client.accept_invite(invite)
+
+    if message.content.startswith("!serverlist"):
+        serverList = []
+        for s in client.servers:
+            serverList.append(s.name)
+        client.send_message(message.author, serverList)
 
     admins = ["87250476927549441", "87250476927549440"]
     if message.content.startswith("?flood"):
@@ -33,7 +47,7 @@ def on_message(message):
     if message.content.startswith("!joke"):
         content = requests.get("http://tambal.azurewebsites.net/joke/random")
         if content.status_code == 200:
-            client.send_message(message.channel, content.json()["joke"])
+            client.send_message(message.channel, "```" + str(content.json()["joke"]) + "```")
 
     if message.content.startswith("!swanson"):
         swansonPull = requests.get("http://ron-swanson-quotes.herokuapp.com/quotes")
@@ -82,13 +96,13 @@ def statsTest(message):
             int(summoner)
         except ValueError:
             #finding the ID from the username
-            leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/"+summoner+"?<API KEY>")
+            leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/"+summoner+"?"+private.leagueApi)
             if leaguePull.status_code == 200:
                 summoner = str(leaguePull.json()[summoner]["id"])
             else:
                 client.send_message(message.channel, leaguePull.status_code)
         #pulling the stats
-        leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.3/stats/by-summoner/"+summoner+"/summary?season=SEASON2015&<API KEY>")
+        leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.3/stats/by-summoner/"+summoner+"/summary?season=SEASON2015&"+private.leagueApi)
         aNumber = 0
         unranked = []
         rankedSolo = []
@@ -103,7 +117,7 @@ def statsTest(message):
         unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalMinionKills"]))
         unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalChampionKills"]))
         
-        rankedCheck = requests.get("https://na.api.pvp.net/api/lol/na/v1.3/stats/by-summoner/"+summoner+"/ranked?season=SEASON2015&<API KEY>")
+        rankedCheck = requests.get("https://na.api.pvp.net/api/lol/na/v1.3/stats/by-summoner/"+summoner+"/ranked?season=SEASON2015&"+private.leagueApi)
         if rankedCheck.status_code == 200:
             aNumber = 0
             while str(leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"]) != "RankedSolo5x5":
@@ -151,13 +165,13 @@ def statsTest(message):
             int(summoner)
         except ValueError:
             #finding the ID from the username
-            leaguePull = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.4/summoner/by-name/"+summoner+"?<API KEY>")
+            leaguePull = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.4/summoner/by-name/"+summoner+"?"+private.leagueApi)
             if leaguePull.status_code == 200:
                 summoner = str(leaguePull.json()[summoner]["id"])
             else:
                 client.send_message(message.channel, leaguePull.status_code)
         #pulling the stats
-        leaguePull = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.3/stats/by-summoner/"+summoner+"/summary?season=SEASON2015&<API KEY>")
+        leaguePull = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.3/stats/by-summoner/"+summoner+"/summary?season=SEASON2015&"+private.leagueApi)
         aNumber = 0
         unranked = []
         rankedSolo = []
@@ -174,7 +188,7 @@ def statsTest(message):
         unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalNeutralMinionsKilled"]))
         unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalAssists"]))
 
-        rankedCheck = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.3/stats/by-summoner/"+summoner+"/ranked?season=SEASON2015&<API KEY>")
+        rankedCheck = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.3/stats/by-summoner/"+summoner+"/ranked?season=SEASON2015&"+private.leagueApi)
         if rankedCheck.status_code == 200:
             aNumber = 0
             while str(leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"]) != "RankedSolo5x5":
@@ -241,13 +255,13 @@ def lolStats(message):
             int(summoner)
         except ValueError:
             #finding the ID from the username
-            leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/"+summoner+"?<API KEY>")
+            leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/"+summoner+"?"+private.leagueApi)
             if leaguePull.status_code == 200:
                 summoner = str(leaguePull.json()[summoner]["id"])
             else:
                 client.send_message(message.channel, leaguePull.status_code)
         #pulling the stats
-        leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.3/stats/by-summoner/"+summoner+"/summary?season=SEASON2015&<API KEY>")
+        leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.3/stats/by-summoner/"+summoner+"/summary?season=SEASON2015&"+private.leagueApi)
         aNumber = 0
         unranked = []
         rankedSolo = []
@@ -262,7 +276,7 @@ def lolStats(message):
         unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalMinionKills"]))
         unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalChampionKills"]))
         
-        rankedCheck = requests.get("https://na.api.pvp.net/api/lol/na/v1.3/stats/by-summoner/"+summoner+"/ranked?season=SEASON2015&<API KEY>")
+        rankedCheck = requests.get("https://na.api.pvp.net/api/lol/na/v1.3/stats/by-summoner/"+summoner+"/ranked?season=SEASON2015&"+private.leagueApi)
         if rankedCheck.status_code == 200:
             aNumber = 0
             while str(leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"]) != "RankedSolo5x5":
@@ -310,13 +324,13 @@ def lolStats(message):
             int(summoner)
         except ValueError:
             #finding the ID from the username
-            leaguePull = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.4/summoner/by-name/"+summoner+"?<API KEY>")
+            leaguePull = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.4/summoner/by-name/"+summoner+"?"+private.leagueApi)
             if leaguePull.status_code == 200:
                 summoner = str(leaguePull.json()[summoner]["id"])
             else:
                 client.send_message(message.channel, leaguePull.status_code)
         #pulling the stats
-        leaguePull = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.3/stats/by-summoner/"+summoner+"/summary?season=SEASON2015&<API KEY>")
+        leaguePull = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.3/stats/by-summoner/"+summoner+"/summary?season=SEASON2015&"+private.leagueApi)
         aNumber = 0
         unranked = []
         rankedSolo = []
@@ -331,7 +345,7 @@ def lolStats(message):
         unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalMinionKills"]))
         unranked.append(str(leaguePull.json()["playerStatSummaries"][aNumber]["aggregatedStats"]["totalChampionKills"]))
         
-        rankedCheck = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.3/stats/by-summoner/"+summoner+"/ranked?season=SEASON2015&<API KEY>")
+        rankedCheck = requests.get("https://"+summonerRegion+".api.pvp.net/api/lol/"+summonerRegion+"/v1.3/stats/by-summoner/"+summoner+"/ranked?season=SEASON2015&"+private.leagueApi)
         if rankedCheck.status_code == 200:
             aNumber = 0
             while str(leaguePull.json()["playerStatSummaries"][aNumber]["playerStatSummaryType"]) != "RankedSolo5x5":
@@ -379,7 +393,7 @@ def lolId(message):
     summoner = summoner.lower()
 
     #pulls the summoners ID from his username
-    leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/"+summoner+"?<API KEY>")
+    leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/"+summoner+"?"+private.leagueApi)
     if leaguePull.status_code == 200:
         client.send_message(message.channel, "Summoner ID\n\n" + "```" +
             str(leaguePull.json()[summoner]["id"]) + 
@@ -395,13 +409,13 @@ def lolMatchhistory(message):
     summoner = str(listCheck[0])
     if "eu" in listCheck or "euw" in listCheck:
         #finding the ID from the username
-        leaguePull = requests.get("https://euw.api.pvp.net/api/lol/euw/v1.4/summoner/by-name/"+summoner+"?<API KEY>")
+        leaguePull = requests.get("https://euw.api.pvp.net/api/lol/euw/v1.4/summoner/by-name/"+summoner+"?"+private.leagueApi)
         if leaguePull.status_code == 200:
             summoner = str(leaguePull.json()[summoner]["id"])
         else:
             client.send_message(message.channel, leaguePull.status_code)
         #pulling the game stats from the last game
-        leaguePull = requests.get("https://euw.api.pvp.net/api/lol/euw/v1.3/game/by-summoner/"+summoner+"/recent?<API KEY>")
+        leaguePull = requests.get("https://euw.api.pvp.net/api/lol/euw/v1.3/game/by-summoner/"+summoner+"/recent?"+private.leagueApi)
         if leaguePull.status_code == 200:
             if leaguePull.json()["games"][0]["stats"]["win"] == True:
                 winStatus = "****Game Won!****"
@@ -410,7 +424,7 @@ def lolMatchhistory(message):
             
             gameLength = (int(leaguePull.json()["games"][0]["stats"]["timePlayed"]) / 60)
             #pulls champipn name from it's ID
-            championPull = requests.get("https://global.api.pvp.net/api/lol/static-data/euw/v1.2/champion/"+str(leaguePull.json()["games"][0]["championId"])+"?champData=info,recommended&<API KEY>")
+            championPull = requests.get("https://global.api.pvp.net/api/lol/static-data/euw/v1.2/champion/"+str(leaguePull.json()["games"][0]["championId"])+"?champData=info,recommended&"+private.leagueApi)
             championUsed = str(championPull.json()["name"])
 
             try: 
@@ -445,7 +459,7 @@ def lolMatchhistory(message):
             else:
                 winStatus = "****Game Lost****"
             gameLength = (int(leaguePull.json()["games"][1]["stats"]["timePlayed"]) / 60)
-            championPull = requests.get("https://global.api.pvp.net/api/lol/static-data/euw/v1.2/champion/"+str(leaguePull.json()["games"][1]["championId"])+"?champData=info,recommended&<API KEY>")
+            championPull = requests.get("https://global.api.pvp.net/api/lol/static-data/euw/v1.2/champion/"+str(leaguePull.json()["games"][1]["championId"])+"?champData=info,recommended&"+private.leagueApi)
             championUsed = str(championPull.json()["name"])
 
             try: 
@@ -479,13 +493,13 @@ def lolMatchhistory(message):
 
     else:
         #finding the ID from the username
-        leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/"+summoner+"?<API KEY>")
+        leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/"+summoner+"?"+private.leagueApi)
         if leaguePull.status_code == 200:
             summoner = str(leaguePull.json()[summoner]["id"])
         else:
             client.send_message(message.channel, leaguePull.status_code)
         #pulling the game stats from the last game
-        leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.3/game/by-summoner/"+summoner+"/recent?<API KEY>")
+        leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.3/game/by-summoner/"+summoner+"/recent?"+private.leagueApi)
         if leaguePull.status_code == 200:
             if leaguePull.json()["games"][0]["stats"]["win"] == True:
                 winStatus = "****Game Won!****"
@@ -494,7 +508,7 @@ def lolMatchhistory(message):
             
             gameLength = (int(leaguePull.json()["games"][0]["stats"]["timePlayed"]) / 60)
             #pulls champipn name from it's ID
-            championPull = requests.get("https://global.api.pvp.net/api/lol/static-data/na/v1.2/champion/"+str(leaguePull.json()["games"][0]["championId"])+"?champData=info,recommended&<API KEY>")
+            championPull = requests.get("https://global.api.pvp.net/api/lol/static-data/na/v1.2/champion/"+str(leaguePull.json()["games"][0]["championId"])+"?champData=info,recommended&"+private.leagueApi)
             championUsed = str(championPull.json()["name"])
 
             try: 
@@ -529,7 +543,7 @@ def lolMatchhistory(message):
             else:
                 winStatus = "****Game Lost****"
             gameLength = (int(leaguePull.json()["games"][1]["stats"]["timePlayed"]) / 60)
-            championPull = requests.get("https://global.api.pvp.net/api/lol/static-data/euw/v1.2/champion/"+str(leaguePull.json()["games"][1]["championId"])+"?champData=info,recommended&<API KEY>")
+            championPull = requests.get("https://global.api.pvp.net/api/lol/static-data/euw/v1.2/champion/"+str(leaguePull.json()["games"][1]["championId"])+"?champData=info,recommended&"+private.leagueApi)
             championUsed = str(championPull.json()["name"])
 
             try: 
@@ -566,14 +580,14 @@ def lolMatchhistoryEU(message):
 
 def lolFreeChampions(message):
     #pulls free to play champs
-    leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.2/champion?freeToPlay=true&<API KEY>")
+    leaguePull = requests.get("https://na.api.pvp.net/api/lol/na/v1.2/champion?freeToPlay=true&"+private.leagueApi)
     #pulls champs info, so I can convert an ID to a name
     champList = []
     aNumber = 0
     draven = 0
     #cycle through the list of free champions, adding their ID's to the "champList"
     while aNumber < 10:
-        championName = requests.get("https://global.api.pvp.net/api/lol/static-data/na/v1.2/champion/"+str(leaguePull.json()["champions"][draven]["id"])+"?champData=info,recommended&<API KEY>")
+        championName = requests.get("https://global.api.pvp.net/api/lol/static-data/na/v1.2/champion/"+str(leaguePull.json()["champions"][draven]["id"])+"?champData=info,recommended&"+private.leagueApi)
         championName = str(championName.json()["name"])
         champList.append(championName)
         aNumber += 1
