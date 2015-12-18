@@ -2,8 +2,9 @@ import discord
 import json
 import requests
 from tabulate import tabulate
-import datetime as dt
+import datetime
 import private
+import os
 
 client = discord.Client()
 client.login(private.botEmail, private.botPassword)
@@ -21,11 +22,129 @@ def on_ready():
 
 @client.event
 def on_message(message):
-    if message.content.startswith('!christmas'):
-        a = dt.datetime(2013,12,30,23,59,59)
-        b = dt.datetime(2013,12,31,23,59,59)
-        d = b-a
-        client.send_message(message.channel, d.hour())
+    if message.content.startswith("!allowgames"):
+        os.mkdir("games/" + message.channel.id)
+        client.send_message(message.channel, "White listed!")
+    
+    if message.content.startswith("!steam"):
+        steamUser = message.content.replace("!steam ", "")
+        
+        try:
+            int(steamUser) + 0
+        except:
+            params = {
+            'key': private.steamApi,
+            'vanityurl': steamUser
+            }
+            
+            steamUser = requests.get('http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/', params=params)
+            steamUser = steamUser.json()["response"]["steamid"]
+            
+        userParams = {
+            "key": private.steamApi,
+            "steamids": steamUser
+            }
+            
+        gameParams = {
+            "key": private.steamApi,
+            "steamid": steamUser
+            }
+            
+        onlineReference = {
+            "0": "Offline",
+            "1": "Online",
+            "2": "Busy",
+            "3": "Away",
+            "4": "Snooze",
+            "5": "Looking to trade",
+            "6": "Looking to play"
+            }
+            
+        userInfo = requests.get("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/", params=userParams)
+        gameInfo = requests.get("http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/", params=gameParams)
+        
+        timestamp = userInfo.json()["response"]["players"][0]["lastlogoff"]
+        timestamp = int(timestamp)
+        value = datetime.datetime.fromtimestamp(timestamp)
+        
+        onlineStatus = str(userInfo.json()["response"]["players"][0]["personastate"])
+        if gameInfo.json()["response"]["total_count"] > 0:
+            recentPlaytime = gameInfo.json()["response"]["games"][0]["playtime_2weeks"] / 60
+            totalPlaytime = gameInfo.json()["response"]["games"][0]["playtime_forever"] / 60
+            lastPlayed = gameInfo.json()["response"]["games"][0]["name"] + " (recent: " + str(recentPlaytime) + " hrs, total: " + str(totalPlaytime) + " hrs)"
+        else:
+            lastPlayed = "No games played in the last two weeks :("
+        
+        
+        
+        client.send_message(message.channel,
+        "```" +
+        "Username: " + userInfo.json()["response"]["players"][0]["personaname"] + "\n" +
+        "Status: " + onlineReference[onlineStatus] + "\n" +  
+        "Last logged on at: " + value.strftime('%Y-%m-%d %H:%M') + "\n" +
+        "Location: " + userInfo.json()["response"]["players"][0]["loccountrycode"] + "\n" +
+        "Last played game: " + lastPlayed + "\n" +
+        "```")
+        
+    if message.content.startswith("!vanity"):
+        steamUser = message.content.replace("!vanity ", "")
+        steamUser = steamUser.lower()
+        
+        params = {
+            'key': private.steamApi,
+            'vanityurl': steamUser
+            }
+
+        steamId = requests.get('http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/', params=params)
+        
+        try:
+            client.send_message(message.channel, "Steam ID: " + str(steamId.json()["response"]["steamid"]))
+            
+        except:
+            client.send_message(message.channel, "Sorry, doesn't look like that's a valid vanity URL")
+    
+    if message.content.startswith("!admin"):
+        adminMessage = message.content.replace("!admin", "")
+        adminMessage = message.mentions[0].id
+        if message.author.id in open("admins.txt").read():
+            with open("admins.txt", "a") as text_file:
+                text_file.write(adminMessage + "\n")
+                
+            client.send_message(message.channel, "Admin permissions added!")
+        else:
+            client.send_message(message.channel, "You do not have permissions to do this")
+        
+    if message.content.startswith("+") and message.author.id in open("admins.txt").read():
+        messageInfo = message.content
+        messageInfo = message.content.replace("+", "")
+        messageInfo = messageInfo.lower()
+        messageInfo = messageInfo.split()
+        
+        if messageInfo[1] in open(os.path.join("games", "games.txt")).read():
+            try:
+                int(messageInfo[0])
+                
+                if int(messageInfo[0]) > -1 and int(messageInfo[0]) < 30:
+                     gameType = str(messageInfo[1] + ".txt")
+                     with open(os.path.join("games/" + message.channel.id, gameType), "w") as text_file:
+                        text_file.write(messageInfo[0])
+                     client.send_message(message.channel, "```" +  str(messageInfo[1]) + " updated!```")
+                
+                else:
+                    client.send_message(message.channel, "```That's not a valid number of players```")
+                  
+            except:
+                if messageInfo[0] == "status":
+                    gameStatus = open(os.path.join("games/" + message.channel.id, messageInfo[1] + ".txt"))
+                    fileContent = gameStatus.read()
+                    client.send_message(message.channel, "```There are " + fileContent + " spots open```")
+                    gameStatus.close()
+            
+                else:
+                    client.send_message(message.channel, "```That's not a vaild number of open spots``")
+                
+        else:
+            client.send_message(message.channel, "```That's not a valid game```")
 
     if message.content.startswith('!join'):
         invite = message.content.replace("!join ", "")
@@ -37,12 +156,12 @@ def on_message(message):
             serverList.append(s.name)
         client.send_message(message.author, serverList)
 
-    admins = ["87250476927549441", "87250476927549440"]
-    if message.content.startswith("?flood"):
-        if message.author.id in admins:
-            client.send_message(message.channel, "\n" * 50)
+    if message.content.startswith("!flood"):
+        if message.author.id in open("admins.txt").read():
+            client.send_message(message.channel, "\n" * 65)
+            
         else:
-            client.send_message(message.channel, message.author.id)
+            client.send_message(message.channel, "Sorry, you don't have permissions to flood the channel")
 
     if message.content.startswith("!joke"):
         content = requests.get("http://tambal.azurewebsites.net/joke/random")
@@ -58,7 +177,7 @@ def on_message(message):
         lolStats(message)
 
     if message.content.startswith("!teststats"):
-        statsTest(message)
+        client.send_message(message.channel, message.channel.id)
 
     if message.content.startswith("!id"):
         lolId(message)
@@ -73,10 +192,21 @@ def on_message(message):
         lolFreeChampions(message)
 
     if message.content.startswith("!help"):
-        helpFile = open("help.txt")
-        fileContent = helpFile.read()
-        client.send_message(message.author, fileContent)
-        helpFile.close()
+        helpCommands = message.content
+        helpCommands = helpCommands.replace("!help ", "")
+        helpCommands = helpCommands.lower()
+        
+        if helpCommands == "commands":
+            helpFile = open(os.path.join("help", "commands.txt"))
+            fileContent = helpFile.read()
+            client.send_message(message.author, fileContent)
+            helpFile.close()
+        else:        
+            helpFile = open("help.txt")
+            fileContent = helpFile.read()
+            client.send_message(message.author, fileContent)
+            helpFile.close()
+
 
 def join(message):
 
@@ -600,6 +730,33 @@ def lolFreeChampions(message):
             )
     else: 
         client.send_message(message.channel, leaguePull.status_code)
+
+def playersNeeded(message):
+    #removes alerting code, spaces
+    game = message.content.replace("!needed ", "")
+    game = game.lower()
+    listCheck = game.split()
+    game = str(listCheck[0])
+    players = listCheck[1]
+
+    client.send_message(message.channel, "Updated!")
+
+def gamesOpen(message):
+    #removes alerting code, spaces
+    game = message.content.replace("!game ", "")
+    game = game.lower()
+    listCheck = game.split()
+    function = str(listCheck[0])
+    game = str(listCheck[1])
+    players = listCheck[2]
+
+    if function == "needed":
+        client.send_message(message.channel, "Updated!")
+
+    if function == "games":
+        client.send_message(message.channel, game + str(players))
+
+
 
 
 client.run()
