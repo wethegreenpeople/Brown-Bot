@@ -41,15 +41,8 @@ Pulls basic info about a steam account such as a user's last played game/play ti
 
 Planned Features / Work in progress
 ---------
-**Story time**
-I wanted to add a couple of "forum games" to the bot. One of them is like a classic five word story game,
-each user gets to contribute 5 words to continuing a story. Some of the feature is implemented, but I'm a bit stuck
-with a good way to show context or the full story.
-
-**Number game**
-The other "forum game" that I thought would be fun to add to the bot is a simple counting game. Bot admin can
-set a max number that he doesn't have to tell to anyone, and the other users count up to that number.
-
+**Pokemon API**
+Useful for looking up quick pokemon stats
 
 **Twitter API**
 Not exactly sure what I want to do with this yet, but I thought it'd be neat to incorperate twitter somehow.
