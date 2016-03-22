@@ -8,21 +8,16 @@ as well as getting a chance to work with API's.
 
 General Features
 --------
-
-**!hello**
-Responds with hello to the user
-
 **!flood**
-Clears the screen of all messages. It doesn't delete anything, it just floods the chat with 50 newlines. 
-Helpful because it keeps the messages in the history.
+Clears the screen of all messages. It doesn't delete anything, it just floods the chat with 50 newlines. Just a brute force way of clearing the screen. Useable only by admins.
 
 **!joke**
-Tells you a random joke using this api: http://tambal.azurewebsites.net/joke/random
+Tells you a random joke (currently broken. Will be fixed in the near future)
 
-**!swanson**
-Tells you a random Ron Swanson quote. Uses this api: http://ron-swanson-quotes.herokuapp.com/quotes
+**!chuck**
+Tells you a random chuck norris fact
 
-**!help**
+**!info**
 Gives you a full list of the working commands.
 
 League of Legends Commands
@@ -39,6 +34,10 @@ Simple. Gives the ID of a summoner. It'd be better if people used their ID when 
 **!freechamps**
 Displays the current rotation of free champions
 
+Steam commands
+------------
+**!steam** 
+Pulls basic info about a steam account such as a user's last played game/play time and online status.
 
 Planned Features / Work in progress
 ---------
