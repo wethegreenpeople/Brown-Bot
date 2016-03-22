@@ -1,18 +1,34 @@
-Here are a list of my current commands:
-
-**!hello**
-**!flood**
-**!joke**
-**!swanson**
+**General**
 ---------------
-**!stats < summoner name>**
-Displays Stats for unranked, team ranked, and solo ranked. Hella broken right now. Only works on summoners that have played all three of those
+_!flood_ 
+Only works with admins
 
-**!id <summoner name>**
-Pulls the ID of a summoner. Works 100%
+_!admin <@user>_
+Grants admin rights to a user. Can only be used by another admin.
 
-**!matchhistory <summoner name>**
-Displays information about your last 1 or 2 games. Fixed the bugs in this. Works 100%
+_!join <instant invite link>_
+Will join whatever server you tell it to.
 
-**!freechamps**
-Displays the current rotation of free champs. I fixed the bugs in this. Works 100%
+**Fun**
+---------------
+_!joke_ (borked. Working on fixing)
+_!chuck_
+
+**League Of Legends**
+---------------
+_!stats <summoner name> <region>_
+Displays total stats for a summoners Unranked, Ranked Team, and Ranked Solo games.
+
+_!id <summoner name>_
+Pulls the ID of a summoner.
+
+_!matchhistory <summoner name> <region>_
+Displays information about your last 1 or 2 games.
+
+_!freechamps_
+Displays the current rotation of free champs.
+
+**Steam**
+---------------
+_!steam <vanity name / userID>_
+Pulls basic info about a steam account
