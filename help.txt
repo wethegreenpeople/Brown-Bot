@@ -1,34 +1,3 @@
-**General**
----------------
-_!flood_ 
-Only works with admins
+Hi! I'm BrownBot and I've been made by @wethegreenpeople using the discord.py library. He's quite new to this whole thing so I might be broken in some places, feel free to mention him anytime I'm broken or misbehaving!
 
-_!admin <@user>_
-Grants admin rights to a user. Can only be used by another admin.
-
-_!join <instant invite link>_
-Will join whatever server you tell it to.
-
-**Fun**
----------------
-_!joke_ (borked. Working on fixing)
-_!chuck_
-
-**League Of Legends**
----------------
-_!stats <summoner name> <region>_
-Displays total stats for a summoners Unranked, Ranked Team, and Ranked Solo games.
-
-_!id <summoner name>_
-Pulls the ID of a summoner.
-
-_!matchhistory <summoner name> <region>_
-Displays information about your last 1 or 2 games.
-
-_!freechamps_
-Displays the current rotation of free champs.
-
-**Steam**
----------------
-_!steam <vanity name / userID>_
-Pulls basic info about a steam account
+For a list of _all_ of my commands, use: **!help commands**

@@ -1,0 +1,23 @@
+2016-04-01 02:09:05,800:INFO:discord.client: on_ready has successfully been registered as an event
+2016-04-01 02:09:05,800:INFO:discord.client: on_message has successfully been registered as an event
+2016-04-01 02:09:05,802:INFO:discord.client: attempting to login via cache
+2016-04-01 02:09:05,803:INFO:discord.client: login cache file found
+2016-04-01 02:09:06,230:INFO:discord.client: logging in returned status code 200
+2016-04-01 02:09:06,244:INFO:discord.client: updating login cache
+2016-04-01 02:09:07,217:INFO:discord.client: Created websocket connected to wss://gateway-1.discord.gg/4
+2016-04-01 02:09:07,218:INFO:discord.client: sent the initial payload to create the websocket
+2016-04-01 02:09:09,040:INFO:discord.state: processed a chunk for 1000 members.
+2016-04-01 02:09:09,045:INFO:discord.state: processed a chunk for 135 members.
+2016-04-01 02:09:09,080:INFO:discord.state: processed a chunk for 1000 members.
+2016-04-01 02:09:09,122:INFO:discord.state: processed a chunk for 1000 members.
+2016-04-01 02:09:09,154:INFO:discord.state: processed a chunk for 1000 members.
+2016-04-01 02:09:09,165:INFO:discord.state: processed a chunk for 373 members.
+2016-04-01 02:09:09,178:INFO:discord.state: processed a chunk for 320 members.
+2016-04-01 02:09:09,205:INFO:discord.state: processed a chunk for 517 members.
+2016-04-01 02:09:09,216:INFO:discord.state: processed a chunk for 300 members.
+2016-04-01 02:09:09,246:INFO:discord.state: processed a chunk for 1000 members.
+2016-04-01 02:09:09,278:INFO:discord.state: processed a chunk for 1000 members.
+2016-04-01 02:09:09,316:INFO:discord.state: processed a chunk for 1000 members.
+2016-04-01 02:09:09,327:INFO:discord.state: processed a chunk for 380 members.
+2016-04-01 02:09:09,366:INFO:discord.state: processed a chunk for 1000 members.
+2016-04-01 02:09:09,400:INFO:discord.state: processed a chunk for 522 members.
