@@ -1,3 +1,0 @@
-Hi! I'm BrownBot and I've been made by @wethegreenpeople using the discord.py library. He's quite new to this whole thing so I might be broken in some places, feel free to mention him anytime I'm broken or misbehaving!
-
-For a list of _all_ of my commands, use: **!help commands**
