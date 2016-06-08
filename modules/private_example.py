@@ -1,0 +1,2 @@
+lolApi = "<LEAGUE OF LEGENDS API KEY>"
+steamApi = "<STEAM API KEY>"
