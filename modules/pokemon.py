@@ -13,10 +13,12 @@ class pokemon():
 		pokemon = pokemon.lower()
 		pokemonPull = requests.get("http://pokeapi.co/api/v2/pokemon/" + pokemon)
 		speciesPull = requests.get("http://pokeapi.co/api/v2/pokemon-species/" + pokemon)
-		
 
+		test = str(speciesPull.json()["evolution_chain"]["url"])
+		test = test.rsplit("/",2)[1]
+		
 		# Pulling the evolution information requires an ID and not a pokemon's name.
-		evolutionPull = requests.get(str(speciesPull.json()["evolution_chain"]["url"]))
+		evolutionPull = requests.get("http://pokeapi.co/api/v2/evolution-chain/" + test)
 
 		pokemonId = str(pokemonPull.json()["id"])
 		weight = str(pokemonPull.json()["weight"])
@@ -24,8 +26,28 @@ class pokemon():
 		basexp = str(pokemonPull.json()["base_experience"])
 		sprite = str(pokemonPull.json()["sprites"]["front_default"])
 		pokemonType = str(pokemonPull.json()["types"][0]["type"]["name"])
-		isBaby = str(evolutionPull.json()["chain"]["is_baby"])
-		evolvesTo = str(evolutionPull.json()["chain"]["evolves_to"][0]["species"]["name"])
+		evolvesTo = []
+
+		# Not all pokemon have three stages of evolution, this checks for that
+		try:
+			evo1 = str(evolutionPull.json()["chain"]["species"]["name"])
+			evolvesTo.append(evo1)
+		except:
+			evo1 = "No evolutions"
+
+		try:
+			evo2 = str(evolutionPull.json()["chain"]["evolves_to"][0]["species"]["name"])
+			evolvesTo.append(evo2)
+		except:
+			evo2 = ""
+			evolvesTo.append(evo2)
+
+		try:
+			evo3 = str(evolutionPull.json()["chain"]["evolves_to"][0]["evolves_to"][0]["species"]["name"])
+			evolvesTo.append(evo3)
+		except:
+			evo3 = ""
+			evolvesTo.append(evo3)
 
 		# Checks if the pokemon has a second type. Hackary because I'm tired
 		try:
@@ -40,8 +62,7 @@ class pokemon():
 			"Weight: " + weight + "\n" +
 			"Height: " + height + "\n" +
 			"Base experience: " + basexp + "\n" +
-			"Baby?: " + isBaby + "\n" +
-			"Evolves to: " + evolvesTo + "\n"
+			"Evolution Chain: " + str(evolvesTo[0]) + "," + str(evolvesTo[1]) + "," + str(evolvesTo[2]) + "\n" +
 			"Type: " + pokemonType + pokemonTypeTwo +
 			"```" +
 			sprite
