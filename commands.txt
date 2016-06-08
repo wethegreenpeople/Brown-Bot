@@ -1,0 +1,37 @@
+If you need to contact the bot's owner (@wethegreenpeople) and he's not in your server. Hop on https://discord.gg/0cDvIgU2voWn4BaD
+Gaurenteed he'll be there.
+
+**General**
+---------------
+_!flood_ 
+Only works with admins
+
+_!admin <@user>_
+Grants admin rights to a user. Can only be used by another admin.
+
+_!join <instant invite link>_
+Will join whatever server you tell it to.
+
+**Fun**
+---------------
+_!joke_ (borked. Working on fixing)
+_!chuck_
+
+**League Of Legends**
+---------------
+_!stats <summoner name> <region>_
+Displays total stats for a summoners Unranked, Ranked Team, and Ranked Solo games.
+
+_!id <summoner name>_
+Pulls the ID of a summoner.
+
+_!matchhistory <summoner name> <region>_
+Displays information about your last 1 or 2 games.
+
+_!freechamps_
+Displays the current rotation of free champs.
+
+**Steam**
+---------------
+_!steam <vanity name / userID>_
+Pulls basic info about a steam account
