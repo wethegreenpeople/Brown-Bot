@@ -67,19 +67,34 @@ class pokemon():
 			shutil.copyfileobj(response.raw, out_file)
 		del response
 
+		# Saving the shiny sprite
+		# Havie to make sure the pokemon has a shiny
+		try:
+			url = str(pokemonPull.json()["sprites"]["front_shiny"])
+			response = requests.get(url, stream=True)
+			with open("/home/ubuntu/brown/modules/images/pokemon/sprite_shiny.png", "wb") as out_file:
+				shutil.copyfileobj(response.raw, out_file)
+			del response
+			shiny = Image.open("/home/ubuntu/brown/modules/images/pokemon/sprite_shiny.png")
+		except:
+			shiny = Image.open("/home/ubuntu/brown/modules/images/pokemon/unknown.png")
+
 		card = Image.open("/home/ubuntu/brown/modules/images/pokemon/pokedex.png")
 		draw = ImageDraw.Draw(card)
-		font = ImageFont.truetype("Arial_Bold_Italic.ttf", 20)
+		font = ImageFont.truetype("/home/ubuntu/brown/modules/Pokemon.ttf", 23)
 
 		# pasting the sprite into the poke dex
 		img = Image.open("/home/ubuntu/brown/modules/images/pokemon/sprite.png")
 		card.paste(img,(70,80),img.convert('RGBA'))
 
+		# Pasting the shiny sprite
+		card.paste(shiny,(318,178),shiny.convert('RGBA'))
+
 		# Adding the pokemon's name
 		draw.text((35,15), pokemon.capitalize(), (0,0,0), font=font)
 
 		# Adding the ID number
-		draw.text((278,18), "PokeDex #: " + pokemonId, (0,0,0), font=font)
+		draw.text((282,18), "PokeDex #: " + pokemonId, (0,0,0), font=font)
 
 		# Adding pokemon's type
 		draw.text((30,235), "Type: " + pokemonType + pokemonTypeTwo, (0,0,0), font=font)
@@ -88,7 +103,7 @@ class pokemon():
 		draw.text((30,275), "Base EXP: " + basexp, (0,0,0), font=font)
 
 		# Evolution chains
-		draw.text((278,43), "Evolution Chain:", (0,0,0), font=font)
+		draw.text((282,43), "Evolution Chain:", (0,0,0), font=font)
 		draw.text((318,65), evolvesTo[0].capitalize(), (0,0,0), font=font)
 		draw.text((318,85), evolvesTo[1].capitalize(), (0,0,0), font=font)
 		draw.text((318,105), evolvesTo[2].capitalize(), (0,0,0), font=font)
