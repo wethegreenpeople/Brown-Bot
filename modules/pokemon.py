@@ -2,14 +2,18 @@ import discord
 from discord.ext import commands
 import requests
 import json
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
+import shutil
 
 class pokemon():
 	def __init__(self, bot):
 		self.bot = bot
 
 	# Pulls basic pokemon information, type, weight, etc
-	@commands.command()
-	async def pokemon(self, pokemon):
+	@commands.command(pass_context=True)
+	async def pokemon(self, ctx, pokemon:str):
 		pokemon = pokemon.lower()
 		pokemonPull = requests.get("http://pokeapi.co/api/v2/pokemon/" + pokemon)
 		speciesPull = requests.get("http://pokeapi.co/api/v2/pokemon-species/" + pokemon)
@@ -28,7 +32,8 @@ class pokemon():
 		pokemonType = str(pokemonPull.json()["types"][0]["type"]["name"])
 		evolvesTo = []
 
-		# Not all pokemon have three stages of evolution, this checks for that
+		# Not all pokemon have three stages of evolution, if it is "missing" an evolution stage it'll insert a
+		# empty spot into the array
 		try:
 			evo1 = str(evolutionPull.json()["chain"]["species"]["name"])
 			evolvesTo.append(evo1)
@@ -55,18 +60,56 @@ class pokemon():
 		except:
 			pokemonTypeTwo = ""
 
-		await self.bot.say(
-			"```" +
-			"Pokemon: " + pokemon + "\n"
-			"ID: " + pokemonId + "\n" +
-			"Weight: " + weight + "\n" +
-			"Height: " + height + "\n" +
-			"Base experience: " + basexp + "\n" +
-			"Evolution Chain: " + str(evolvesTo[0]) + "," + str(evolvesTo[1]) + "," + str(evolvesTo[2]) + "\n" +
-			"Type: " + pokemonType + pokemonTypeTwo +
-			"```" +
-			sprite
-			)
+		# Saving the sprite locally, so we can paste it onto the pokedex image
+		url = str(pokemonPull.json()["sprites"]["front_default"])
+		response = requests.get(url, stream=True)
+		with open("/home/ubuntu/brown/modules/images/pokemon/sprite.png", "wb") as out_file:
+			shutil.copyfileobj(response.raw, out_file)
+		del response
+
+		card = Image.open("/home/ubuntu/brown/modules/images/pokemon/pokedex.png")
+		draw = ImageDraw.Draw(card)
+		font = ImageFont.truetype("Arial_Bold_Italic.ttf", 20)
+
+		# pasting the sprite into the poke dex
+		img = Image.open("/home/ubuntu/brown/modules/images/pokemon/sprite.png")
+		card.paste(img,(70,80),img.convert('RGBA'))
+
+		# Adding the pokemon's name
+		draw.text((35,15), pokemon.capitalize(), (0,0,0), font=font)
+
+		# Adding the ID number
+		draw.text((278,18), "PokeDex #: " + pokemonId, (0,0,0), font=font)
+
+		# Adding pokemon's type
+		draw.text((30,235), "Type: " + pokemonType + pokemonTypeTwo, (0,0,0), font=font)
+
+		# Base EXP
+		draw.text((30,275), "Base EXP: " + basexp, (0,0,0), font=font)
+
+		# Evolution chains
+		draw.text((278,43), "Evolution Chain:", (0,0,0), font=font)
+		draw.text((318,65), evolvesTo[0].capitalize(), (0,0,0), font=font)
+		draw.text((318,85), evolvesTo[1].capitalize(), (0,0,0), font=font)
+		draw.text((318,105), evolvesTo[2].capitalize(), (0,0,0), font=font)
+		
+		card.save("/home/ubuntu/brown/modules/images/pokemon/pokemon.png")
+		await self.bot.send_file(ctx.message.channel, "/home/ubuntu/brown/modules/images/pokemon/pokemon.png", filename="Pokemon.png", content=None, tts=False)
+
+		# Pure text info
+		#await self.bot.say(
+		#	"```" +
+		#	"Pokemon: " + pokemon + "\n"
+		#	"ID: " + pokemonId + "\n" +
+		#	"Weight: " + weight + "\n" +
+		#	"Height: " + height + "\n" +
+		#	"Base experience: " + basexp + "\n" +
+		#	"Evolution Chain: " + str(evolvesTo[0]) + "," + str(evolvesTo[1]) + "," + str(evolvesTo[2]) + "\n" +
+		#	"Type: " + pokemonType + pokemonTypeTwo +
+		#	"```" 
+			#sprite
+		#	)
+
 
 	# Pulls several sprites for the pokemon. Front, back, and front and back shiny.
 	@commands.command()
