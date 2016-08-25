@@ -6,11 +6,22 @@ from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 import shutil
+from bs4 import BeautifulSoup
+import pyscreenshot as ImageGrab
+import os
+from selenium import webdriver
 
 class pokemon():
 	def __init__(self, bot):
 		self.bot = bot
 
+	# Screenshot local
+	@commands.command(pass_context=True)
+	async def pgo(self):
+                ImageGrab.grab_to_file("im.png")
+                await self.bot.say("kk fam")
+                
+	
 	# Pulls basic pokemon information, type, weight, etc
 	@commands.command(pass_context=True)
 	async def pokemon(self, ctx, pokemon:str):
