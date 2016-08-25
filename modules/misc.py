@@ -5,10 +5,24 @@ import json
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
+import textMessage
+
 
 class misc():
 	def __init__(self, bot):
 		self.bot = bot
+
+	@commands.command(hidden=True, pass_context=True)
+	async def text(self, ctx, phone, message, carrier):
+		if ctx.message.author.id in open("admins.txt").read():
+			carriers = {
+				"att": "@txt.att.net",
+				"tmobile": "@tmomail.net",
+			}
+			textMessage.toaddrs  = phone + str(carriers[carrier])
+			textMessage.doneTextSend(textMessage.start_time, textMessage.get_Time(), message)
+		else:
+			self.bot.say("Lmao you can't text people")
 	
 	@commands.command(description="Invite BrownBot to your server!")
 	async def join(self):
@@ -21,20 +35,6 @@ class misc():
 		for s in self.bot.servers:
 			serverCount = serverCount + 1
 		await self.bot.whisper(serverCount)
-
-	# A thing for work
-	@commands.command(hidden="True")
-	async def timesheet(self):
-		im = Image.open("/home/ubuntu/brown/modules/poo.png")
-		draw = ImageDraw.Draw(im)
-		font = ImageFont.truetype("DejaVuSans.ttf", 16)
-
-		#box = (100,100,400,400)
-		#im = im.crop(box)
-		draw.text((0,0), "FUcking test", (0,0,0), font=font)
-		im.save("/home/ubuntu/brown/modules/poo11.png")
-
-		await self.bot.say(im.size)
 
 	@commands.command(pass_context=True, hidden=True)
 	async def logs2(ctx):
